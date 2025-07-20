@@ -6,6 +6,15 @@
 #include <mutex>
 #include <memory>
 
+// Hook信息结构
+struct HookInfo {
+    void* targetMethod;
+    void* hookMethod;
+    void* backupMethod;
+    int architecture;
+    long hookTime;
+};
+
 namespace VirtualSpace {
     class SubstrateHook {
     private:
@@ -13,11 +22,18 @@ namespace VirtualSpace {
         static std::mutex sMutex;
         
         bool mIsInitialized;
-        std::map<void*, void*> mHookManager;
+        std::map<void*, HookInfo> mHookManager;
         std::mutex mMutex;
         
         SubstrateHook();
         ~SubstrateHook();
+        
+        // 私有实例方法实现
+        bool initializeImpl();
+        void cleanupImpl();
+        bool hookMethodImpl(void* targetMethod, void* hookMethod, void* backupMethod);
+        bool unhookMethodImpl(void* targetMethod);
+        void* callOriginMethodImpl(void* backupMethod, void* receiver, void* args);
         
         bool initializeARMHook();
         bool initializeARM64Hook();
@@ -30,10 +46,10 @@ namespace VirtualSpace {
         bool hookMethodX86(void* targetMethod, void* hookMethod, void* backupMethod);
         bool hookMethodX86_64(void* targetMethod, void* hookMethod, void* backupMethod);
         
-        bool unhookMethodARM(void* targetMethod, const struct HookInfo& hookInfo);
-        bool unhookMethodARM64(void* targetMethod, const struct HookInfo& hookInfo);
-        bool unhookMethodX86(void* targetMethod, const struct HookInfo& hookInfo);
-        bool unhookMethodX86_64(void* targetMethod, const struct HookInfo& hookInfo);
+        bool unhookMethodARM(void* targetMethod, const HookInfo& hookInfo);
+        bool unhookMethodARM64(void* targetMethod, const HookInfo& hookInfo);
+        bool unhookMethodX86(void* targetMethod, const HookInfo& hookInfo);
+        bool unhookMethodX86_64(void* targetMethod, const HookInfo& hookInfo);
         
     public:
         static SubstrateHook* getInstance();
@@ -42,12 +58,6 @@ namespace VirtualSpace {
         static bool hookMethod(void* targetMethod, void* hookMethod, void* backupMethod);
         static bool unhookMethod(void* targetMethod);
         static void* callOriginMethod(void* backupMethod, void* receiver, void* args);
-        
-        struct HookInfo {
-            void* originalMethod;
-            void* backupMethod;
-            void* hookMethod;
-        };
     };
 }
 

@@ -18,6 +18,10 @@ namespace VirtualSpace {
         ProcessManager();
         ~ProcessManager();
         
+        // 私有实例方法实现
+        bool initializeImpl();
+        void cleanupImpl();
+        
     public:
         static ProcessManager* getInstance();
         static bool initialize();

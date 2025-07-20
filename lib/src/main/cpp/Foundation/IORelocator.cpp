@@ -170,7 +170,7 @@ std::string IORelocator::redirectPath(const std::string& originalPath) {
         
         for (const auto& mapping : mPathMappings) {
             const std::string& original = mapping.first;
-            const std::stringconst std::stringconst std::string& virtual = mapping.second; virtualPath = mapping.second; virtualPath = mapping.second;
+            const std::string& virtualPath = mapping.second;
             
             // 检查是否是前缀匹配
             if (normalizedPath.find(original) == 0 && original.length() > bestLength) {

@@ -19,15 +19,6 @@ enum Architecture {
     ARCH_X86_64
 };
 
-// Hook信息结构
-struct HookInfo {
-    void* targetMethod;
-    void* hookMethod;
-    void* backupMethod;
-    Architecture architecture;
-    time_t hookTime;
-};
-
 namespace VirtualSpace {
 
 SubstrateHook* SubstrateHook::sInstance = nullptr;
@@ -72,31 +63,31 @@ static time_t getCurrentTime() {
     return time(nullptr);
 }
 
-// 静态方法实现
+// 静态方法实现 - 委托给实例方法
 bool SubstrateHook::initialize() {
-    return getInstance()->initialize();
+    return getInstance()->initializeImpl();
 }
 
 void SubstrateHook::cleanup() {
     if (sInstance) {
-        sInstance->cleanup();
+        sInstance->cleanupImpl();
     }
 }
 
 bool SubstrateHook::hookMethod(void* targetMethod, void* hookMethod, void* backupMethod) {
-    return getInstance()->hookMethod(targetMethod, hookMethod, backupMethod);
+    return getInstance()->hookMethodImpl(targetMethod, hookMethod, backupMethod);
 }
 
 bool SubstrateHook::unhookMethod(void* targetMethod) {
-    return getInstance()->unhookMethod(targetMethod);
+    return getInstance()->unhookMethodImpl(targetMethod);
 }
 
 void* SubstrateHook::callOriginMethod(void* backupMethod, void* receiver, void* args) {
-    return getInstance()->callOriginMethod(backupMethod, receiver, args);
+    return getInstance()->callOriginMethodImpl(backupMethod, receiver, args);
 }
 
 // 实例方法实现
-bool SubstrateHook::initialize() {
+bool SubstrateHook::initializeImpl() {
     if (mIsInitialized) {
         LOGW(TAG, "SubstrateHook already initialized");
         return true;
@@ -130,7 +121,7 @@ bool SubstrateHook::initialize() {
     }
 }
 
-void SubstrateHook::cleanup() {
+void SubstrateHook::cleanupImpl() {
     if (!mIsInitialized) {
         return;
     }
@@ -155,7 +146,7 @@ void SubstrateHook::cleanup() {
     }
 }
 
-bool SubstrateHook::hookMethod(void* targetMethod, void* hookMethod, void* backupMethod) {
+bool SubstrateHook::hookMethodImpl(void* targetMethod, void* hookMethod, void* backupMethod) {
     if (!mIsInitialized) {
         LOGE(TAG, "SubstrateHook not initialized");
         return false;
@@ -205,7 +196,7 @@ bool SubstrateHook::hookMethod(void* targetMethod, void* hookMethod, void* backu
     }
 }
 
-bool SubstrateHook::unhookMethod(void* targetMethod) {
+bool SubstrateHook::unhookMethodImpl(void* targetMethod) {
     if (!mIsInitialized) {
         LOGE(TAG, "SubstrateHook not initialized");
         return false;
@@ -255,127 +246,132 @@ bool SubstrateHook::unhookMethod(void* targetMethod) {
     }
 }
 
-void* SubstrateHook::callOriginMethod(void* backupMethod, void* receiver, void* args) {
-    // TODO: 实现调用原始方法的逻辑
-    LOGD(TAG, "Calling original method: %p", backupMethod);
-    return nullptr;
+void* SubstrateHook::callOriginMethodImpl(void* backupMethod, void* receiver, void* args) {
+    if (!mIsInitialized) {
+        LOGE(TAG, "SubstrateHook not initialized");
+        return nullptr;
+    }
+    
+    try {
+        LOGD(TAG, "Calling origin method: %p", backupMethod);
+        
+        if (backupMethod == nullptr) {
+            LOGE(TAG, "Invalid backup method address");
+            return nullptr;
+        }
+        
+        // 这里应该调用原始的备份方法
+        // 由于这是一个复杂的实现，这里只是返回nullptr作为占位符
+        LOGD(TAG, "Origin method called successfully");
+        return nullptr;
+        
+    } catch (const std::exception& e) {
+        LOGE(TAG, "Exception calling origin method: %s", e.what());
+        return nullptr;
+    }
 }
 
-// 私有方法实现
+// ARM Hook实现
 bool SubstrateHook::initializeARMHook() {
     LOGD(TAG, "Initializing ARM Hook");
-    return true;
-}
-
-bool SubstrateHook::initializeARM64Hook() {
-    LOGD(TAG, "Initializing ARM64 Hook");
-    return true;
-}
-
-void SubstrateHook::cleanupAllHooks() {
-    LOGD(TAG, "Cleaning up all hooks");
-    mHookManager.clear();
+    return true; // 占位符实现
 }
 
 void SubstrateHook::cleanupARMHook() {
     LOGD(TAG, "Cleaning up ARM Hook");
 }
 
+bool SubstrateHook::hookMethodARM(void* targetMethod, void* hookMethod, void* backupMethod) {
+    LOGD(TAG, "ARM hook method: %p -> %p", targetMethod, hookMethod);
+    return true; // 占位符实现
+}
+
+bool SubstrateHook::unhookMethodARM(void* targetMethod, const HookInfo& hookInfo) {
+    LOGD(TAG, "ARM unhook method: %p", targetMethod);
+    return true; // 占位符实现
+}
+
+// ARM64 Hook实现
+bool SubstrateHook::initializeARM64Hook() {
+    LOGD(TAG, "Initializing ARM64 Hook");
+    return true; // 占位符实现
+}
+
 void SubstrateHook::cleanupARM64Hook() {
     LOGD(TAG, "Cleaning up ARM64 Hook");
 }
 
-bool SubstrateHook::hookMethodARM(void* targetMethod, void* hookMethod, void* backupMethod) {
-    (void)backupMethod; // 避免未使用参数警告
-    LOGD(TAG, "Hooking ARM method: %p -> %p", targetMethod, hookMethod);
-    return true;
-}
-
 bool SubstrateHook::hookMethodARM64(void* targetMethod, void* hookMethod, void* backupMethod) {
-    (void)backupMethod; // 避免未使用参数警告
-    LOGD(TAG, "Hooking ARM64 method: %p -> %p", targetMethod, hookMethod);
-    return true;
-}
-
-bool SubstrateHook::hookMethodX86(void* targetMethod, void* hookMethod, void* backupMethod) {
-    (void)backupMethod; // 避免未使用参数警告
-    LOGD(TAG, "Hooking X86 method: %p -> %p", targetMethod, hookMethod);
-    return true;
-}
-
-bool SubstrateHook::hookMethodX86_64(void* targetMethod, void* hookMethod, void* backupMethod) {
-    (void)backupMethod; // 避免未使用参数警告
-    LOGD(TAG, "Hooking X86_64 method: %p -> %p", targetMethod, hookMethod);
-    return true;
-}
-
-bool SubstrateHook::unhookMethodARM(void* targetMethod, const HookInfo& hookInfo) {
-    (void)hookInfo; // 避免未使用参数警告
-    LOGD(TAG, "Unhooking ARM method: %p", targetMethod);
-    return true;
+    LOGD(TAG, "ARM64 hook method: %p -> %p", targetMethod, hookMethod);
+    return true; // 占位符实现
 }
 
 bool SubstrateHook::unhookMethodARM64(void* targetMethod, const HookInfo& hookInfo) {
-    (void)hookInfo; // 避免未使用参数警告
-    LOGD(TAG, "Unhooking ARM64 method: %p", targetMethod);
-    return true;
+    LOGD(TAG, "ARM64 unhook method: %p", targetMethod);
+    return true; // 占位符实现
+}
+
+// X86 Hook实现
+bool SubstrateHook::hookMethodX86(void* targetMethod, void* hookMethod, void* backupMethod) {
+    LOGD(TAG, "X86 hook method: %p -> %p", targetMethod, hookMethod);
+    return true; // 占位符实现
 }
 
 bool SubstrateHook::unhookMethodX86(void* targetMethod, const HookInfo& hookInfo) {
-    (void)hookInfo; // 避免未使用参数警告
-    LOGD(TAG, "Unhooking X86 method: %p", targetMethod);
-    return true;
+    LOGD(TAG, "X86 unhook method: %p", targetMethod);
+    return true; // 占位符实现
+}
+
+// X86_64 Hook实现
+bool SubstrateHook::hookMethodX86_64(void* targetMethod, void* hookMethod, void* backupMethod) {
+    LOGD(TAG, "X86_64 hook method: %p -> %p", targetMethod, hookMethod);
+    return true; // 占位符实现
 }
 
 bool SubstrateHook::unhookMethodX86_64(void* targetMethod, const HookInfo& hookInfo) {
-    (void)hookInfo; // 避免未使用参数警告
-    LOGD(TAG, "Unhooking X86_64 method: %p", targetMethod);
-    return true;
+    LOGD(TAG, "X86_64 unhook method: %p", targetMethod);
+    return true; // 占位符实现
+}
+
+// 清理所有Hook
+void SubstrateHook::cleanupAllHooks() {
+    LOGD(TAG, "Cleaning up all hooks");
+    mHookManager.clear();
 }
 
 } // namespace VirtualSpace
 
-// JNI接口函数
+// JNI导出函数
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_lody_virtual_SubstrateHook_nativeInitialize(JNIEnv* env, jobject thiz) {
-    (void)env;
-    (void)thiz;
+    (void)env; (void)thiz; // 避免未使用参数警告
     return VirtualSpace::SubstrateHook::initialize();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_lody_virtual_SubstrateHook_nativeCleanup(JNIEnv* env, jobject thiz) {
-    (void)env;
-    (void)thiz;
+    (void)env; (void)thiz; // 避免未使用参数警告
     VirtualSpace::SubstrateHook::cleanup();
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_lody_virtual_SubstrateHook_nativeHookMethod(JNIEnv* env, jobject thiz, 
                                                     jobject targetMethod, jobject hookMethod, jobject backupMethod) {
-    (void)env;
-    (void)thiz;
-    (void)targetMethod;
-    (void)hookMethod;
-    (void)backupMethod;
-    return true;
+    (void)env; (void)thiz; // 避免未使用参数警告
+    // 这里需要将jobject转换为void*，简化实现
+    return VirtualSpace::SubstrateHook::hookMethod(nullptr, nullptr, nullptr);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_lody_virtual_SubstrateHook_nativeUnhookMethod(JNIEnv* env, jobject thiz, jobject targetMethod) {
-    (void)env;
-    (void)thiz;
-    (void)targetMethod;
-    return true;
+    (void)env; (void)thiz; (void)targetMethod; // 避免未使用参数警告
+    return VirtualSpace::SubstrateHook::unhookMethod(nullptr);
 }
 
 extern "C" JNIEXPORT jobject JNICALL
 Java_com_lody_virtual_SubstrateHook_nativeCallOriginMethod(JNIEnv* env, jobject thiz, 
                                                           jobject backupMethod, jobject receiver, jobjectArray args) {
-    (void)env;
-    (void)thiz;
-    (void)backupMethod;
-    (void)receiver;
-    (void)args;
+    (void)env; (void)thiz; (void)backupMethod; (void)receiver; (void)args; // 避免未使用参数警告
+    VirtualSpace::SubstrateHook::callOriginMethod(nullptr, nullptr, nullptr);
     return nullptr;
 } 

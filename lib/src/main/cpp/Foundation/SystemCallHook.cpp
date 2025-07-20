@@ -15,7 +15,7 @@ SystemCallHook::SystemCallHook() : mIsInitialized(false) {
 
 SystemCallHook::~SystemCallHook() {
     LOGD(TAG, "SystemCallHook destructor");
-    cleanup();
+    cleanupImpl();
 }
 
 SystemCallHook* SystemCallHook::getInstance() {
@@ -28,19 +28,19 @@ SystemCallHook* SystemCallHook::getInstance() {
     return sInstance;
 }
 
-// 静态方法实现
+// 静态方法实现 - 委托给实例方法
 bool SystemCallHook::initialize() {
-    return getInstance()->initialize();
+    return getInstance()->initializeImpl();
 }
 
 void SystemCallHook::cleanup() {
     if (sInstance) {
-        sInstance->cleanup();
+        sInstance->cleanupImpl();
     }
 }
 
 // 实例方法实现
-bool SystemCallHook::initialize() {
+bool SystemCallHook::initializeImpl() {
     if (mIsInitialized) {
         LOGW(TAG, "SystemCallHook already initialized");
         return true;
@@ -61,7 +61,7 @@ bool SystemCallHook::initialize() {
     }
 }
 
-void SystemCallHook::cleanup() {
+void SystemCallHook::cleanupImpl() {
     if (!mIsInitialized) {
         return;
     }
@@ -84,14 +84,12 @@ void SystemCallHook::cleanup() {
 // JNI接口函数
 extern "C" JNIEXPORT jboolean JNICALL
 Java_com_lody_virtual_SystemCallHook_nativeInitialize(JNIEnv* env, jobject thiz) {
-    (void)env;
-    (void)thiz;
+    (void)env; (void)thiz; // 避免未使用参数警告
     return VirtualSpace::SystemCallHook::initialize();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_lody_virtual_SystemCallHook_nativeCleanup(JNIEnv* env, jobject thiz) {
-    (void)env;
-    (void)thiz;
+    (void)env; (void)thiz; // 避免未使用参数警告
     VirtualSpace::SystemCallHook::cleanup();
 } 

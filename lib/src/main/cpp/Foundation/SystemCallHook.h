@@ -18,6 +18,10 @@ namespace VirtualSpace {
         SystemCallHook();
         ~SystemCallHook();
         
+        // 私有实例方法实现
+        bool initializeImpl();
+        void cleanupImpl();
+        
     public:
         static SystemCallHook* getInstance();
         static bool initialize();
