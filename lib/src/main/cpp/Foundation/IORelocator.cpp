@@ -1,3 +1,4 @@
+#include "../Substrate/SubstrateHook.h"
 #include "IORelocator.h"
 #include "../utils/LogUtils.h"
 #include "../utils/FileUtils.h"
@@ -164,12 +165,12 @@ std::string IORelocator::redirectPath(const std::string& originalPath) {
         
         for (const auto& mapping : mPathMappings) {
             const std::string& original = mapping.first;
-            const std::string& virtual = mapping.second;
+            const std::stringconst std::string& virtual = mapping.second; virtualPath = mapping.second;
             
             // 检查是否是前缀匹配
             if (normalizedPath.find(original) == 0 && original.length() > bestLength) {
                 bestMatch = original;
-                bestVirtualPath = virtual;
+                bestVirtualPath = virtualPath;
                 bestLength = original.length();
             }
         }

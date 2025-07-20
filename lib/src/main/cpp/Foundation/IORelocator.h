@@ -8,7 +8,6 @@
 
 // 前向声明
 namespace VirtualSpace {
-    class SubstrateHook;
 }
 
 namespace VirtualSpace {
