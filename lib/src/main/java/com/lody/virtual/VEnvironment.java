@@ -478,4 +478,71 @@ public class VEnvironment {
             return 0;
         }
     }
+    
+    /**
+     * 获取虚拟数据目录（静态方法）
+     * @param packageName 包名
+     * @return 虚拟数据目录路径
+     */
+    public static String getVirtualDataDir(String packageName) {
+        return "/data/data/com.virtualspace.app/virtual/data/" + packageName;
+    }
+    
+    /**
+     * 获取虚拟库目录（静态方法）
+     * @param packageName 包名
+     * @return 虚拟库目录路径
+     */
+    public static String getVirtualLibDir(String packageName) {
+        return "/data/data/com.virtualspace.app/virtual/data/" + packageName + "/lib";
+    }
+    
+    /**
+     * 获取虚拟缓存目录（静态方法）
+     * @param packageName 包名
+     * @return 虚拟缓存目录路径
+     */
+    public static String getVirtualCacheDir(String packageName) {
+        return "/data/data/com.virtualspace.app/virtual/cache/" + packageName;
+    }
+    
+    /**
+     * 获取虚拟APK路径（静态方法）
+     * @param packageName 包名
+     * @return 虚拟APK路径
+     */
+    public static String getVirtualApkPath(String packageName) {
+        return "/data/data/com.virtualspace.app/virtual/apks/" + packageName + ".apk";
+    }
+    
+    /**
+     * 获取重定向路径（静态方法）
+     * @param originalPath 原始路径
+     * @return 重定向路径
+     */
+    public static String getRedirectedPath(String originalPath) {
+        // 这里应该实现路径重定向逻辑
+        // 暂时返回原始路径
+        return originalPath;
+    }
+    
+    /**
+     * 获取虚拟路径（静态方法）
+     * @param originalPath 原始路径
+     * @return 虚拟路径
+     */
+    public static String getVirtualPath(String originalPath) {
+        // 这里应该实现路径虚拟化逻辑
+        // 暂时返回原始路径
+        return originalPath;
+    }
+    
+    /**
+     * 获取实例（静态方法）
+     * @param context 上下文
+     * @return VEnvironment实例
+     */
+    public static VEnvironment getInstance(Context context) {
+        return new VEnvironment(context);
+    }
 } 

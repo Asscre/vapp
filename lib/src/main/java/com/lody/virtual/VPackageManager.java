@@ -97,17 +97,16 @@ public class VPackageManager {
     /**
      * 安装虚拟应用
      * @param apkPath APK文件路径
-     * @param packageName 包名
      * @return 安装结果
      */
-    public InstallResult installVirtualApp(String apkPath, String packageName) {
+    public InstallResult installVirtualApp(String apkPath) {
         if (!mIsInitialized.get()) {
             Log.e(TAG, "VPackageManager not initialized");
             return new InstallResult(false, "VPackageManager not initialized", null);
         }
         
         try {
-            Log.d(TAG, "Installing virtual app: " + packageName + " from " + apkPath);
+            Log.d(TAG, "Installing virtual app from: " + apkPath);
             
             // 检查APK文件是否存在
             File apkFile = new File(apkPath);
@@ -115,15 +114,17 @@ public class VPackageManager {
                 return new InstallResult(false, "APK file not found: " + apkPath, null);
             }
             
-            // 检查包名是否已存在
-            if (mVirtualApps.containsKey(packageName)) {
-                return new InstallResult(false, "Virtual app already installed: " + packageName, null);
-            }
-            
             // 解析APK信息
             PackageInfo packageInfo = parseApkInfo(apkPath);
             if (packageInfo == null) {
                 return new InstallResult(false, "Failed to parse APK info", null);
+            }
+            
+            String packageName = packageInfo.packageName;
+            
+            // 检查包名是否已存在
+            if (mVirtualApps.containsKey(packageName)) {
+                return new InstallResult(false, "Virtual app already installed: " + packageName, null);
             }
             
             // 创建虚拟应用信息
@@ -162,12 +163,12 @@ public class VPackageManager {
     /**
      * 卸载虚拟应用
      * @param packageName 包名
-     * @return 卸载结果
+     * @return 卸载是否成功
      */
-    public UninstallResult uninstallVirtualApp(String packageName) {
+    public boolean uninstallVirtualApp(String packageName) {
         if (!mIsInitialized.get()) {
             Log.e(TAG, "VPackageManager not initialized");
-            return new UninstallResult(false, "VPackageManager not initialized");
+            return false;
         }
         
         try {
@@ -176,7 +177,8 @@ public class VPackageManager {
             // 检查虚拟应用是否存在
             VAppInfo vAppInfo = mVirtualApps.get(packageName);
             if (vAppInfo == null) {
-                return new UninstallResult(false, "Virtual app not found: " + packageName);
+                Log.w(TAG, "Virtual app not found: " + packageName);
+                return true; // 不存在也算成功
             }
             
             // 停止虚拟应用进程
@@ -196,11 +198,11 @@ public class VPackageManager {
             deleteVirtualAppInfo(packageName);
             
             Log.d(TAG, "Virtual app uninstalled successfully: " + packageName);
-            return new UninstallResult(true, "Uninstall successful");
+            return true;
             
         } catch (Exception e) {
             Log.e(TAG, "Failed to uninstall virtual app", e);
-            return new UninstallResult(false, "Exception: " + e.getMessage());
+            return false;
         }
     }
     

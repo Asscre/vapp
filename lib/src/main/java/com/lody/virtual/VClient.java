@@ -71,12 +71,12 @@ public class VClient {
             mEnvironment.initialize();
             
             // 初始化IO重定向器
-            mIOUniformer = new IOUniformer(mContext);
-            mIOUniformer.initialize();
+            mIOUniformer = IOUniformer.getInstance();
+            mIOUniformer.initialize(mContext);
             
             // 初始化Binder提供者
-            mBinderProvider = new BinderProvider(mContext);
-            mBinderProvider.initialize();
+            mBinderProvider = BinderProvider.getInstance();
+            mBinderProvider.initialize(mContext);
             
             // 设置虚拟环境
             setupVirtualEnvironment();

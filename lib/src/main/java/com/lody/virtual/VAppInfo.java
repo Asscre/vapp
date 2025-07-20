@@ -42,6 +42,16 @@ public class VAppInfo {
     public String dataDir;
     
     /**
+     * 虚拟库目录
+     */
+    public String libDir;
+    
+    /**
+     * 虚拟缓存目录
+     */
+    public String cacheDir;
+    
+    /**
      * 安装时间
      */
     public long installTime;
@@ -50,6 +60,11 @@ public class VAppInfo {
      * 是否启用
      */
     public boolean enabled = true;
+    
+    /**
+     * 是否启用（别名）
+     */
+    public boolean isEnabled = true;
     
     /**
      * 应用图标路径

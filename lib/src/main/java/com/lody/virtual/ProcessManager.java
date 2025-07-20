@@ -223,6 +223,38 @@ public class ProcessManager {
     }
     
     /**
+     * 根据包名停止虚拟进程
+     * @param packageName 包名
+     * @return 是否成功
+     */
+    public boolean stopVirtualProcess(String packageName) {
+        if (!mIsInitialized) {
+            Log.e(TAG, "ProcessManager not initialized");
+            return false;
+        }
+        
+        try {
+            Log.d(TAG, "Stopping virtual process for package: " + packageName);
+            
+            // 查找相关进程
+            for (VProcessInfo processInfo : mProcesses.values()) {
+                if (packageName.equals(processInfo.packageName)) {
+                    if (stopVirtualProcess(processInfo.processId)) {
+                        return true;
+                    }
+                }
+            }
+            
+            Log.w(TAG, "No running process found for package: " + packageName);
+            return true; // 没有运行的进程也算成功
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Exception stopping virtual process by package", e);
+            return false;
+        }
+    }
+    
+    /**
      * 获取进程信息
      * @param processId 进程ID
      * @return 进程信息
@@ -289,6 +321,33 @@ public class ProcessManager {
         }
         
         return mProcesses.size();
+    }
+    
+    /**
+     * 清理资源
+     */
+    public void cleanup() {
+        if (!mIsInitialized) {
+            return;
+        }
+        
+        try {
+            Log.d(TAG, "Cleaning up ProcessManager...");
+            
+            // 停止所有进程
+            for (VProcessInfo processInfo : mProcesses.values()) {
+                stopVirtualProcess(processInfo.processId);
+            }
+            
+            // 清理进程列表
+            mProcesses.clear();
+            
+            mIsInitialized = false;
+            Log.d(TAG, "ProcessManager cleanup completed");
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to cleanup ProcessManager", e);
+        }
     }
     
     /**

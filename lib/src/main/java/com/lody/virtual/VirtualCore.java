@@ -6,6 +6,10 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
+import com.lody.virtual.security.DataIsolationManager;
+import com.lody.virtual.security.PermissionControlManager;
+import com.lody.virtual.security.DataEncryptionManager;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +30,7 @@ public class VirtualCore {
     private ProcessManager mProcessManager;
     private VPackageManager mPackageManager;
     private DataIsolationManager mDataIsolationManager;
-    private PermissionManager mPermissionManager;
+    private PermissionControlManager mPermissionManager;
     private DataEncryptionManager mDataEncryptionManager;
     
     // 虚拟应用缓存
@@ -68,24 +72,24 @@ public class VirtualCore {
             mEnvironment.initialize();
             
             // 初始化进程管理器
-            mProcessManager = new ProcessManager(mContext);
-            mProcessManager.initialize();
+            mProcessManager = ProcessManager.getInstance();
+            mProcessManager.initialize(mContext);
             
             // 初始化包管理器
-            mPackageManager = new VPackageManager(mContext);
-            mPackageManager.initialize();
+            mPackageManager = VPackageManager.getInstance();
+            mPackageManager.initialize(mContext, this);
             
             // 初始化数据隔离管理器
-            mDataIsolationManager = new DataIsolationManager(mContext);
-            mDataIsolationManager.initialize();
+            mDataIsolationManager = DataIsolationManager.getInstance();
+            mDataIsolationManager.initialize(mContext, this, mEnvironment);
             
             // 初始化权限管理器
-            mPermissionManager = new PermissionManager(mContext);
-            mPermissionManager.initialize();
+            mPermissionManager = PermissionControlManager.getInstance();
+            mPermissionManager.initialize(mContext, this);
             
             // 初始化数据加密管理器
-            mDataEncryptionManager = new DataEncryptionManager(mContext);
-            mDataEncryptionManager.initialize();
+            mDataEncryptionManager = DataEncryptionManager.getInstance();
+            mDataEncryptionManager.initialize(mContext, this);
             
             // 加载已安装的虚拟应用
             loadVirtualApps();
@@ -145,7 +149,7 @@ public class VirtualCore {
     /**
      * 获取权限管理器
      */
-    public PermissionManager getPermissionManager() {
+    public PermissionControlManager getPermissionManager() {
         return mPermissionManager;
     }
     
@@ -176,44 +180,11 @@ public class VirtualCore {
                 return new InstallResult(false, "APK file not found: " + apkPath);
             }
             
-            // 解析APK信息
-            PackageInfo packageInfo = mContext.getPackageManager()
-                    .getPackageArchiveInfo(apkPath, PackageManager.GET_PERMISSIONS);
+            // 使用包管理器安装应用
+            VPackageManager.InstallResult result = mPackageManager.installVirtualApp(apkPath);
             
-            if (packageInfo == null) {
-                return new InstallResult(false, "Failed to parse APK");
-            }
-            
-            // 创建虚拟应用信息
-            VAppInfo appInfo = new VAppInfo();
-            appInfo.packageName = packageInfo.packageName;
-            appInfo.versionName = packageInfo.versionName;
-            appInfo.versionCode = packageInfo.versionCode;
-            appInfo.apkPath = apkPath;
-            appInfo.installTime = System.currentTimeMillis();
-            
-            // 复制APK到虚拟空间
-            String virtualApkPath = mEnvironment.getVirtualApkPath(appInfo.packageName);
-            if (!mEnvironment.copyFile(apkPath, virtualApkPath)) {
-                return new InstallResult(false, "Failed to copy APK to virtual space");
-            }
-            
-            appInfo.virtualApkPath = virtualApkPath;
-            
-            // 创建虚拟数据目录
-            String dataDir = mEnvironment.getVirtualDataPath(appInfo.packageName);
-            if (!mEnvironment.createDirectory(dataDir)) {
-                return new InstallResult(false, "Failed to create virtual data directory");
-            }
-            
-            appInfo.dataDir = dataDir;
-            
-            // 保存应用信息
-            mVirtualApps.put(appInfo.packageName, appInfo);
-            saveVirtualApps();
-            
-            Log.d(TAG, "Virtual app installed successfully: " + appInfo.packageName);
-            return new InstallResult(true, "Installation successful");
+            // 转换为VirtualCore的InstallResult
+            return new InstallResult(result.success, result.message);
             
         } catch (Exception e) {
             Log.e(TAG, "Failed to install virtual app", e);
@@ -224,45 +195,30 @@ public class VirtualCore {
     /**
      * 卸载虚拟应用
      * @param packageName 包名
-     * @return 卸载结果
+     * @return 卸载是否成功
      */
-    public UninstallResult uninstallVirtualApp(String packageName) {
+    public boolean uninstallVirtualApp(String packageName) {
         if (!mIsInitialized) {
             Log.e(TAG, "VirtualCore not initialized");
-            return new UninstallResult(false, "VirtualCore not initialized");
+            return false;
         }
         
         try {
             Log.d(TAG, "Uninstalling virtual app: " + packageName);
             
-            VAppInfo appInfo = mVirtualApps.get(packageName);
-            if (appInfo == null) {
-                return new UninstallResult(false, "App not found: " + packageName);
+            // 使用包管理器卸载应用
+            boolean success = mPackageManager.uninstallVirtualApp(packageName);
+            
+            if (success) {
+                // 从缓存中移除
+                mVirtualApps.remove(packageName);
             }
             
-            // 停止相关进程
-            mProcessManager.killProcessesByPackage(packageName);
-            
-            // 删除虚拟APK文件
-            if (appInfo.virtualApkPath != null) {
-                new File(appInfo.virtualApkPath).delete();
-            }
-            
-            // 删除虚拟数据目录
-            if (appInfo.dataDir != null) {
-                mEnvironment.deleteDirectory(appInfo.dataDir);
-            }
-            
-            // 从缓存中移除
-            mVirtualApps.remove(packageName);
-            saveVirtualApps();
-            
-            Log.d(TAG, "Virtual app uninstalled successfully: " + packageName);
-            return new UninstallResult(true, "Uninstallation successful");
+            return success;
             
         } catch (Exception e) {
             Log.e(TAG, "Failed to uninstall virtual app", e);
-            return new UninstallResult(false, "Uninstallation failed: " + e.getMessage());
+            return false;
         }
     }
     
@@ -271,51 +227,91 @@ public class VirtualCore {
      * @param packageName 包名
      * @return 启动结果
      */
-    public LaunchResult launchVirtualApp(String packageName) {
+    public StartProcessResult startVirtualApp(String packageName) {
         if (!mIsInitialized) {
             Log.e(TAG, "VirtualCore not initialized");
-            return new LaunchResult(false, "VirtualCore not initialized");
+            return new StartProcessResult(false, "VirtualCore not initialized");
         }
         
         try {
-            Log.d(TAG, "Launching virtual app: " + packageName);
+            Log.d(TAG, "Starting virtual app: " + packageName);
             
+            // 检查应用是否已安装
             VAppInfo appInfo = mVirtualApps.get(packageName);
             if (appInfo == null) {
-                return new LaunchResult(false, "App not found: " + packageName);
+                return new StartProcessResult(false, "App not installed: " + packageName);
             }
             
-            // 检查APK文件是否存在
-            if (!new File(appInfo.virtualApkPath).exists()) {
-                return new LaunchResult(false, "APK file not found");
-            }
+            // 使用进程管理器启动应用
+            ProcessManager.StartProcessResult result = mProcessManager.startVirtualProcess(appInfo);
             
-            // 启动虚拟进程
-            boolean success = mProcessManager.startVirtualProcess(appInfo);
-            if (!success) {
-                return new LaunchResult(false, "Failed to start virtual process");
-            }
-            
-            Log.d(TAG, "Virtual app launched successfully: " + packageName);
-            return new LaunchResult(true, "Launch successful");
+            // 转换为VirtualCore的StartProcessResult
+            return new StartProcessResult(result.success, result.message, result.processId);
             
         } catch (Exception e) {
-            Log.e(TAG, "Failed to launch virtual app", e);
-            return new LaunchResult(false, "Launch failed: " + e.getMessage());
+            Log.e(TAG, "Failed to start virtual app", e);
+            return new StartProcessResult(false, "Start failed: " + e.getMessage());
         }
+    }
+    
+    /**
+     * 停止虚拟应用
+     * @param packageName 包名
+     * @return 停止是否成功
+     */
+    public boolean stopVirtualApp(String packageName) {
+        if (!mIsInitialized) {
+            Log.e(TAG, "VirtualCore not initialized");
+            return false;
+        }
+        
+        try {
+            Log.d(TAG, "Stopping virtual app: " + packageName);
+            
+            // 使用进程管理器停止应用
+            return mProcessManager.stopVirtualProcess(packageName);
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to stop virtual app", e);
+            return false;
+        }
+    }
+    
+    /**
+     * 获取虚拟应用信息
+     * @param packageName 包名
+     * @return 应用信息
+     */
+    public VAppInfo getVirtualAppInfo(String packageName) {
+        if (!mIsInitialized) {
+            return null;
+        }
+        
+        return mVirtualApps.get(packageName);
     }
     
     /**
      * 获取所有虚拟应用
+     * @return 应用列表
      */
-    public List<VAppInfo> getVirtualApps() {
+    public List<VAppInfo> getAllVirtualApps() {
+        if (!mIsInitialized) {
+            return new ArrayList<>();
+        }
+        
         return new ArrayList<>(mVirtualApps.values());
     }
     
     /**
-     * 检查应用是否已安装
+     * 检查是否是虚拟应用
+     * @param packageName 包名
+     * @return 是否是虚拟应用
      */
-    public boolean isVirtualAppInstalled(String packageName) {
+    public boolean isVirtualApp(String packageName) {
+        if (!mIsInitialized) {
+            return false;
+        }
+        
         return mVirtualApps.containsKey(packageName);
     }
     
@@ -324,22 +320,63 @@ public class VirtualCore {
      */
     private void loadVirtualApps() {
         try {
-            // TODO: 从持久化存储中加载虚拟应用信息
             Log.d(TAG, "Loading virtual apps...");
+            
+            // 从包管理器获取已安装的应用
+            List<VAppInfo> apps = mPackageManager.getAllVirtualApps();
+            
+            // 添加到缓存
+            for (VAppInfo app : apps) {
+                mVirtualApps.put(app.packageName, app);
+            }
+            
+            Log.d(TAG, "Loaded " + apps.size() + " virtual apps");
+            
         } catch (Exception e) {
             Log.e(TAG, "Failed to load virtual apps", e);
         }
     }
     
     /**
-     * 保存虚拟应用信息
+     * 清理资源
      */
-    private void saveVirtualApps() {
+    public void cleanup() {
+        if (!mIsInitialized) {
+            return;
+        }
+        
         try {
-            // TODO: 将虚拟应用信息保存到持久化存储
-            Log.d(TAG, "Saving virtual apps...");
+            Log.d(TAG, "Cleaning up VirtualCore...");
+            
+            // 清理各个管理器
+            if (mProcessManager != null) {
+                mProcessManager.cleanup();
+            }
+            
+            if (mPackageManager != null) {
+                mPackageManager.cleanup();
+            }
+            
+            if (mDataIsolationManager != null) {
+                mDataIsolationManager.cleanup();
+            }
+            
+            if (mPermissionManager != null) {
+                mPermissionManager.cleanup();
+            }
+            
+            if (mDataEncryptionManager != null) {
+                mDataEncryptionManager.cleanup();
+            }
+            
+            // 清理缓存
+            mVirtualApps.clear();
+            
+            mIsInitialized = false;
+            Log.d(TAG, "VirtualCore cleanup completed");
+            
         } catch (Exception e) {
-            Log.e(TAG, "Failed to save virtual apps", e);
+            Log.e(TAG, "Failed to cleanup VirtualCore", e);
         }
     }
     
@@ -357,28 +394,21 @@ public class VirtualCore {
     }
     
     /**
-     * 卸载结果类
-     */
-    public static class UninstallResult {
-        public final boolean success;
-        public final String message;
-        
-        public UninstallResult(boolean success, String message) {
-            this.success = success;
-            this.message = message;
-        }
-    }
-    
-    /**
      * 启动结果类
      */
-    public static class LaunchResult {
+    public static class StartProcessResult {
         public final boolean success;
         public final String message;
+        public final int processId;
         
-        public LaunchResult(boolean success, String message) {
+        public StartProcessResult(boolean success, String message) {
+            this(success, message, -1);
+        }
+        
+        public StartProcessResult(boolean success, String message, int processId) {
             this.success = success;
             this.message = message;
+            this.processId = processId;
         }
     }
 } 

@@ -13,6 +13,7 @@ import com.lody.virtual.VirtualCore;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * 系统API Hook类
@@ -311,11 +312,11 @@ public class SystemApiHooks {
             sb.append("SystemApiHooks Status:\n");
             
             // 获取所有Hook信息
-            var allHooks = mHookWrapper.getAllHookInfo();
+            Map<String, HookInfo> allHooks = mHookWrapper.getAllHookInfo();
             sb.append("Total hooks: ").append(allHooks.size()).append("\n");
             
-            for (var entry : allHooks.entrySet()) {
-                var hookInfo = entry.getValue();
+            for (Map.Entry<String, HookInfo> entry : allHooks.entrySet()) {
+                HookInfo hookInfo = entry.getValue();
                 sb.append("- ").append(hookInfo.targetClass).append(".")
                   .append(hookInfo.targetMethod).append(" (priority: ")
                   .append(hookInfo.priority).append(")\n");
