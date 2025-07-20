@@ -7,6 +7,8 @@ android {
     namespace 'com.lody.virtual'
     compileSdk rootProject.ext.compile_sdk_version
     
+    ndkVersion "26.3.11579264"
+    
     defaultConfig {
         minSdk rootProject.ext.min_sdk_version
         targetSdk rootProject.ext.target_sdk_version
@@ -55,6 +57,10 @@ dependencies {
     implementation "androidx.core:core-ktx:$androidx_core_version"
     
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.3.1'
+    testImplementation 'androidx.test:core:1.5.0'
+    testImplementation 'androidx.test:runner:1.5.2'
+    testImplementation 'androidx.test:rules:1.5.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 } 
