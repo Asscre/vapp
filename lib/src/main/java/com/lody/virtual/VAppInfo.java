@@ -233,6 +233,17 @@ public class VAppInfo {
     }
     
     /**
+     * 检查权限（返回PackageManager权限常量）
+     */
+    public int checkPermission(String permission) {
+        if (hasPermission(permission)) {
+            return android.content.pm.PackageManager.PERMISSION_GRANTED;
+        } else {
+            return android.content.pm.PackageManager.PERMISSION_DENIED;
+        }
+    }
+    
+    /**
      * 增加启动次数
      */
     public void incrementLaunchCount() {
