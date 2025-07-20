@@ -1,5 +1,5 @@
-#include "../Substrate/SubstrateHook.h"
 #include "IORelocator.h"
+#include "../Substrate/SubstrateHook.h"
 #include "../utils/LogUtils.h"
 #include "../utils/FileUtils.h"
 #include "../utils/StringUtils.h"
@@ -13,11 +13,16 @@
 #include <string.h>
 #include <map>
 #include <mutex>
+#include <jni.h>
+#include <string>
+#include <algorithm>
+#include <stdexcept>
 
 #define TAG "IORelocator"
 
 namespace VirtualSpace {
 
+// 静态成员初始化
 IORelocator* IORelocator::sInstance = nullptr;
 std::mutex IORelocator::sMutex;
 
@@ -165,7 +170,7 @@ std::string IORelocator::redirectPath(const std::string& originalPath) {
         
         for (const auto& mapping : mPathMappings) {
             const std::string& original = mapping.first;
-            const std::stringconst std::string& virtual = mapping.second; virtualPath = mapping.second;
+            const std::stringconst std::stringconst std::string& virtual = mapping.second; virtualPath = mapping.second; virtualPath = mapping.second;
             
             // 检查是否是前缀匹配
             if (normalizedPath.find(original) == 0 && original.length() > bestLength) {
