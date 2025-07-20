@@ -2,6 +2,7 @@ package com.lody.virtual.service;
 
 import android.content.Context;
 import android.os.IBinder;
+import android.os.IInterface;
 import android.util.Log;
 
 import com.lody.virtual.VPackageManager;
@@ -10,7 +11,7 @@ import com.lody.virtual.VPackageManager;
  * 虚拟包管理器服务
  * 提供包管理相关的Binder服务
  */
-public class VPackageManagerService implements IBinder {
+public class VPackageManagerService implements IBinder, IInterface {
     
     private static final String TAG = "VPackageManagerService";
     
@@ -38,11 +39,16 @@ public class VPackageManagerService implements IBinder {
     }
     
     @Override
-    public IBinder queryLocalInterface(String descriptor) {
+    public android.os.IInterface queryLocalInterface(String descriptor) {
         if ("com.lody.virtual.service.IPackageManager".equals(descriptor)) {
             return this;
         }
         return null;
+    }
+    
+    @Override
+    public IBinder asBinder() {
+        return this;
     }
     
     @Override

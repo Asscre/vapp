@@ -2,13 +2,14 @@ package com.lody.virtual.service;
 
 import android.content.Context;
 import android.os.IBinder;
+import android.os.IInterface;
 import android.util.Log;
 
 /**
  * 虚拟内容提供者服务
  * 提供内容提供者相关的Binder服务
  */
-public class VContentProviderService implements IBinder {
+public class VContentProviderService implements IBinder, IInterface {
     
     private static final String TAG = "VContentProviderService";
     
@@ -34,11 +35,16 @@ public class VContentProviderService implements IBinder {
     }
     
     @Override
-    public IBinder queryLocalInterface(String descriptor) {
+    public android.os.IInterface queryLocalInterface(String descriptor) {
         if ("com.lody.virtual.service.IContentProvider".equals(descriptor)) {
             return this;
         }
         return null;
+    }
+    
+    @Override
+    public IBinder asBinder() {
+        return this;
     }
     
     @Override

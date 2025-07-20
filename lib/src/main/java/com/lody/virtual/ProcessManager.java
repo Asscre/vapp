@@ -324,6 +324,24 @@ public class ProcessManager {
     }
     
     /**
+     * 检查是否为虚拟进程
+     * @param pid 进程ID
+     * @return 是否为虚拟进程
+     */
+    public boolean isVirtualProcess(int pid) {
+        return mProcesses.containsKey(pid);
+    }
+    
+    /**
+     * 杀死虚拟进程
+     * @param pid 进程ID
+     * @return 是否成功
+     */
+    public boolean killVirtualProcess(int pid) {
+        return stopVirtualProcess(pid);
+    }
+    
+    /**
      * 清理资源
      */
     public void cleanup() {

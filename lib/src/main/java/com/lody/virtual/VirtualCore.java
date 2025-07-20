@@ -348,36 +348,195 @@ public class VirtualCore {
         try {
             Log.d(TAG, "Cleaning up VirtualCore...");
             
-            // 清理各个管理器
+            // 清理进程管理器
             if (mProcessManager != null) {
                 mProcessManager.cleanup();
             }
             
+            // 清理包管理器
             if (mPackageManager != null) {
                 mPackageManager.cleanup();
             }
             
+            // 清理数据隔离管理器
             if (mDataIsolationManager != null) {
                 mDataIsolationManager.cleanup();
             }
             
+            // 清理权限管理器
             if (mPermissionManager != null) {
                 mPermissionManager.cleanup();
             }
             
+            // 清理数据加密管理器
             if (mDataEncryptionManager != null) {
                 mDataEncryptionManager.cleanup();
             }
             
-            // 清理缓存
+            // 清理虚拟应用缓存
             mVirtualApps.clear();
             
             mIsInitialized = false;
-            Log.d(TAG, "VirtualCore cleanup completed");
+            Log.d(TAG, "VirtualCore cleaned up successfully");
             
         } catch (Exception e) {
             Log.e(TAG, "Failed to cleanup VirtualCore", e);
         }
+    }
+    
+    // 网络相关方法
+    public boolean checkNetworkPermission(String host, int port) {
+        // 暂时返回true，表示允许网络访问
+        return true;
+    }
+    
+    public String getVirtualNetworkHost(String host) {
+        // 暂时返回原主机名
+        return host;
+    }
+    
+    public String getVirtualNetworkUrl(String url) {
+        // 暂时返回原URL
+        return url;
+    }
+    
+    // 包管理相关方法
+    public PackageInfo getVirtualPackageInfo(String packageName) {
+        if (mPackageManager != null) {
+            return mPackageManager.getVirtualPackageInfo(packageName);
+        }
+        return null;
+    }
+    
+    public Object getVirtualInstalledPackages(int flags) {
+        if (mPackageManager != null) {
+            return mPackageManager.getVirtualInstalledPackages(flags);
+        }
+        return new ArrayList<>();
+    }
+    
+    public Object resolveVirtualActivity(Object intent, int flags) {
+        if (mPackageManager != null) {
+            return mPackageManager.resolveVirtualActivity((android.content.Intent) intent, flags);
+        }
+        return null;
+    }
+    
+    public Object queryVirtualIntentActivities(Object intent, int flags) {
+        if (mPackageManager != null) {
+            return mPackageManager.queryVirtualIntentActivities((android.content.Intent) intent, flags);
+        }
+        return new ArrayList<>();
+    }
+    
+    public Object queryVirtualIntentServices(Object intent, int flags) {
+        if (mPackageManager != null) {
+            return mPackageManager.queryVirtualIntentServices((android.content.Intent) intent, flags);
+        }
+        return new ArrayList<>();
+    }
+    
+    public int checkVirtualPermission(String permission, String packageName) {
+        if (mPermissionManager != null) {
+            return mPermissionManager.checkVirtualPermission(permission, packageName);
+        }
+        return PackageManager.PERMISSION_DENIED;
+    }
+    
+    public Object getVirtualApplicationInfo(String packageName, int flags) {
+        if (mPackageManager != null) {
+            return mPackageManager.getVirtualApplicationInfo(packageName, flags);
+        }
+        return null;
+    }
+    
+    // 设备信息相关方法
+    public String getVirtualDeviceModel() {
+        return Build.MODEL;
+    }
+    
+    public String getVirtualDeviceManufacturer() {
+        return Build.MANUFACTURER;
+    }
+    
+    public String getVirtualDeviceBrand() {
+        return Build.BRAND;
+    }
+    
+    public String getVirtualDeviceProduct() {
+        return Build.PRODUCT;
+    }
+    
+    public String getVirtualDeviceName() {
+        return Build.DEVICE;
+    }
+    
+    public String getVirtualDeviceFingerprint() {
+        return Build.FINGERPRINT;
+    }
+    
+    public String getVirtualDeviceSerial() {
+        return Build.SERIAL;
+    }
+    
+    public String getVirtualDeviceHardware() {
+        return Build.HARDWARE;
+    }
+    
+    public String getVirtualBuildHost() {
+        return Build.HOST;
+    }
+    
+    public String getVirtualBuildTags() {
+        return Build.TAGS;
+    }
+    
+    public String getVirtualBuildType() {
+        return Build.TYPE;
+    }
+    
+    public String getVirtualBuildUser() {
+        return Build.USER;
+    }
+    
+    // 进程相关方法
+    public int getVirtualProcessId() {
+        return android.os.Process.myPid();
+    }
+    
+    public int getVirtualUserId() {
+        return android.os.Process.myUid();
+    }
+    
+    public Object getVirtualUserHandle() {
+        return android.os.Process.myUserHandle();
+    }
+    
+    public boolean isVirtualProcess(int pid) {
+        if (mProcessManager != null) {
+            return mProcessManager.isVirtualProcess(pid);
+        }
+        return false;
+    }
+    
+    public void killVirtualProcess(int pid) {
+        if (mProcessManager != null) {
+            mProcessManager.killVirtualProcess(pid);
+        }
+    }
+    
+    public boolean isVirtualThread(int tid) {
+        // 暂时返回false
+        return false;
+    }
+    
+    public void setVirtualThreadPriority(int tid, int priority) {
+        // 暂时不实现
+    }
+    
+    public int getVirtualThreadPriority(int tid) {
+        // 暂时返回默认优先级
+        return android.os.Process.THREAD_PRIORITY_DEFAULT;
     }
     
     /**

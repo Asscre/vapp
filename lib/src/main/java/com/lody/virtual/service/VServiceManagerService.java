@@ -3,13 +3,14 @@ package com.lody.virtual.service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.IInterface;
 import android.util.Log;
 
 /**
  * 虚拟服务管理器服务
  * 提供服务管理相关的Binder服务
  */
-public class VServiceManagerService implements IBinder {
+public class VServiceManagerService implements IBinder, IInterface {
     
     private static final String TAG = "VServiceManagerService";
     
@@ -35,11 +36,16 @@ public class VServiceManagerService implements IBinder {
     }
     
     @Override
-    public IBinder queryLocalInterface(String descriptor) {
+    public android.os.IInterface queryLocalInterface(String descriptor) {
         if ("com.lody.virtual.service.IServiceManager".equals(descriptor)) {
             return this;
         }
         return null;
+    }
+    
+    @Override
+    public IBinder asBinder() {
+        return this;
     }
     
     @Override

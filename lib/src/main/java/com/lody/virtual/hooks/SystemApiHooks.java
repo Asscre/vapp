@@ -312,11 +312,11 @@ public class SystemApiHooks {
             sb.append("SystemApiHooks Status:\n");
             
             // 获取所有Hook信息
-            Map<String, HookInfo> allHooks = mHookWrapper.getAllHookInfo();
+            java.util.concurrent.ConcurrentHashMap<String, com.lody.virtual.HookWrapper.HookInfo> allHooks = mHookWrapper.getAllHookInfo();
             sb.append("Total hooks: ").append(allHooks.size()).append("\n");
             
-            for (Map.Entry<String, HookInfo> entry : allHooks.entrySet()) {
-                HookInfo hookInfo = entry.getValue();
+            for (java.util.Map.Entry<String, com.lody.virtual.HookWrapper.HookInfo> entry : allHooks.entrySet()) {
+                com.lody.virtual.HookWrapper.HookInfo hookInfo = entry.getValue();
                 sb.append("- ").append(hookInfo.targetClass).append(".")
                   .append(hookInfo.targetMethod).append(" (priority: ")
                   .append(hookInfo.priority).append(")\n");

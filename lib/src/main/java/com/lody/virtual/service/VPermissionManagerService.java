@@ -2,13 +2,14 @@ package com.lody.virtual.service;
 
 import android.content.Context;
 import android.os.IBinder;
+import android.os.IInterface;
 import android.util.Log;
 
 /**
  * 虚拟权限管理器服务
  * 提供权限管理相关的Binder服务
  */
-public class VPermissionManagerService implements IBinder {
+public class VPermissionManagerService implements IBinder, IInterface {
     
     private static final String TAG = "VPermissionManagerService";
     
@@ -34,11 +35,16 @@ public class VPermissionManagerService implements IBinder {
     }
     
     @Override
-    public IBinder queryLocalInterface(String descriptor) {
+    public android.os.IInterface queryLocalInterface(String descriptor) {
         if ("com.lody.virtual.service.IPermissionManager".equals(descriptor)) {
             return this;
         }
         return null;
+    }
+    
+    @Override
+    public IBinder asBinder() {
+        return this;
     }
     
     @Override

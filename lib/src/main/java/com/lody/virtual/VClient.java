@@ -6,6 +6,12 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.lody.virtual.service.VPackageManagerService;
+import com.lody.virtual.service.VActivityManagerService;
+import com.lody.virtual.service.VContentProviderService;
+import com.lody.virtual.service.VPermissionManagerService;
+import com.lody.virtual.service.VServiceManagerService;
+
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 

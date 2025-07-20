@@ -207,9 +207,19 @@ public class PermissionControlManager {
             }
             
         } catch (Exception e) {
-            Log.e(TAG, "Failed to check permission", e);
+            Log.e(TAG, "Exception checking permission", e);
             return PERMISSION_DENIED;
         }
+    }
+    
+    /**
+     * 检查虚拟权限
+     * @param permission 权限名
+     * @param packageName 包名
+     * @return 权限状态
+     */
+    public int checkVirtualPermission(String permission, String packageName) {
+        return checkPermission(packageName, permission);
     }
     
     /**

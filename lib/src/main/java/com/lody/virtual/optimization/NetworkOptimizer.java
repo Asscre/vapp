@@ -330,7 +330,7 @@ public class NetworkOptimizer {
         }
         
         try {
-            NetworkInfo activeNetwork = mConnectivityManager.getActiveNetworkInfo();
+            android.net.NetworkInfo activeNetwork = mConnectivityManager.getActiveNetworkInfo();
             boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
             
             String message = isConnected ? 
