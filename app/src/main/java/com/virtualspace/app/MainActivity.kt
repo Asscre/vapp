@@ -1,4 +1,4 @@
-package com.virtualspace
+package com.virtualspace.app
 
 import android.os.Bundle
 import android.util.Log

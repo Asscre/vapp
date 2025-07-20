@@ -1,4 +1,4 @@
-package com.virtualspace
+package com.virtualspace.app
 
 import android.content.Intent
 import android.os.Bundle

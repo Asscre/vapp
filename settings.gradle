@@ -16,6 +16,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "VirtualSpaceApp"
+include ':app'
 include ':lib'
 include ':hooklib'
 include ':xposedcompat'
