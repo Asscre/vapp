@@ -153,7 +153,7 @@ public class NetworkOptimizer {
             // 检查缓存
             RequestCache cache = getRequestCache(packageName);
             if (cache != null) {
-                CachedResponse cachedResponse = cache.get(url);
+                RequestCache.CachedResponse cachedResponse = cache.get(url);
                 if (cachedResponse != null && !cachedResponse.isExpired()) {
                     Log.d(TAG, "Returning cached response for: " + url);
                     return new NetworkRequestResult(true, "Cached response", cachedResponse.data);

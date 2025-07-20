@@ -526,28 +526,36 @@ public class VPackageManager {
     }
     
     /**
-     * 复制APK到虚拟环境
+     * 复制APK文件到虚拟环境
+     * @param vAppInfo 虚拟应用信息
+     * @return 是否成功
      */
     private boolean copyApkToVirtualEnvironment(VAppInfo vAppInfo) {
         try {
-            String virtualApkPath = VEnvironment.getVirtualApkPath(vAppInfo.packageName);
-            File sourceFile = new File(vAppInfo.apkPath);
-            File targetFile = new File(virtualApkPath);
+            Log.d(TAG, "Copying APK to virtual environment: " + vAppInfo.apkPath);
             
-            // 确保目标目录存在
-            targetFile.getParentFile().mkdirs();
+            // 获取虚拟APK路径
+            String virtualApkPath = mVirtualCore.getEnvironment().getVirtualApkPath(vAppInfo.packageName);
+            vAppInfo.virtualApkPath = virtualApkPath;
             
-            // 复制文件
-            java.nio.file.Files.copy(sourceFile.toPath(), targetFile.toPath(), 
-                                   java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            // 创建APK目录
+            File apkDir = new File(virtualApkPath).getParentFile();
+            if (!apkDir.exists() && !apkDir.mkdirs()) {
+                Log.e(TAG, "Failed to create APK directory: " + apkDir.getAbsolutePath());
+                return false;
+            }
             
-            // 更新APK路径
-            vAppInfo.apkPath = virtualApkPath;
+            // 复制APK文件
+            if (!mVirtualCore.getEnvironment().copyFile(vAppInfo.apkPath, virtualApkPath)) {
+                Log.e(TAG, "Failed to copy APK file to virtual environment");
+                return false;
+            }
             
+            Log.d(TAG, "APK copied successfully to: " + virtualApkPath);
             return true;
             
         } catch (Exception e) {
-            Log.e(TAG, "Failed to copy APK to virtual environment", e);
+            Log.e(TAG, "Exception copying APK to virtual environment", e);
             return false;
         }
     }

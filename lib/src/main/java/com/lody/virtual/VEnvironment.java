@@ -507,15 +507,6 @@ public class VEnvironment {
     }
     
     /**
-     * 获取虚拟APK路径（静态方法）
-     * @param packageName 包名
-     * @return 虚拟APK路径
-     */
-    public static String getVirtualApkPath(String packageName) {
-        return "/data/data/com.virtualspace.app/virtual/apks/" + packageName + ".apk";
-    }
-    
-    /**
      * 获取重定向路径（静态方法）
      * @param originalPath 原始路径
      * @return 重定向路径
